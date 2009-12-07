@@ -66,17 +66,17 @@ def hv(g):
 	h0 = hv(g.childs[0]) #valid even with no childs
 	h1 = hv(g.childs[1])
 	if (not g.childs[1]) or (g.childs[0] and g.childs[0].size > g.childs[1].size):
-		g.childs[0].dx = 1
+		g.childs[0].dx = h1
 		g.childs[0].dy = 0
 		if g.childs[1]:
 			g.childs[1].dx = 0
-			g.childs[1].dy = h0 #+ 1
+			g.childs[1].dy = 1 
 	else:
-		g.childs[1].dx = 1
+		g.childs[1].dx = h0
 		g.childs[1].dy = 0
 		if g.childs[0]:
 			g.childs[0].dx = 0
-			g.childs[0].dy = h1#+1
+			g.childs[0].dy = 1
 	return h0+h1
 	
 if __name__ == '__main__':
