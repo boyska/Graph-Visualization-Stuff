@@ -106,13 +106,46 @@ class DiGraph(object):
             n['low'] = min
             return min
         def path(v):
-            pass
+            self.s['path_mark'] = True
+            self.t['path_mark'] = True
+            self.get_edge_by_id(self.s.id(), self.t.id())['path_mark'] = True
+
+            #Caso1: c'e' un arco di riporto non marcato {v,w}: viene marcato l'arco e ritornato vw
+            for adiac in self.get_adiacent_edge(v):
+                if adiac['back'] and not adiac['path_mark']:
+                    print 'CASO 1'
+                    return [v, adiac.tuple()[1]]
+
+            #Caso 2: esiste un arco dell'albero non marcato (v,w)
+            for adiac_edge in self.get_adiacent_edge(v):
+                if not adiac['back'] and not adiac['path_mark']:
+                    print 'CASO 2'
+                    #TODO: how can we find that path?
+                    return []
+            #Caso 3:
+            for adiac in self.get_incident_edge(v):
+                if adiac['back'] and not adiac['path_mark']:
+                    print 'CASO 3'
+                    assert adiac.tuple()[0]['dfn'] > adiac.tuple()[1]['dfn']
+                    #Risaliamo l'albero seguendo FATH
+                    ret = []
+                    wi = adiac.tuple()[1]
+                    while wi and wi != v:
+                        wi['path_mark'] = True
+                        ret.insert(0, wi)
+                        wi = wi['fath']
+                    return ret
+
+            return []
 
         low(self.s)
         print 'S', self.s, self.s['low'], 'L'
         print 'T', self.t, self.t['low'], 'L'
         for n in self.nodes.values():
             print n, n['low'], n['dfn']
+        #Its just a test, the real algo is a bit more complex
+        print path(self.t)
+
     def print_graph(self):
         for v in self.nodes.values():
             print v, [str(ad) for ad in self.get_adiacents(v)]
@@ -176,7 +209,12 @@ class Graph(DiGraph):
             queue += new
             count += 1
 
+        if not dg.get_edge(dg.s, dg.t):
+            aux = dg.s
+            dg.s = dg.t
+            dg.t = aux
         dg.print_graph()
+        assert dg.get_edge(dg.s, dg.t) is not None
         return dg
 
     def st(self):
@@ -200,7 +238,7 @@ class Graph(DiGraph):
         random_edge = self.edges[0]
         self.s = random_edge.tuple()[0]
         self.t = random_edge.tuple()[1]
-        stgraph = self.st_graph(self.s, self.t)
+        stgraph = self.st_graph(self.s, self.t) #its a directed graph
         return stgraph.st()
         low(self.s)
         print 'S = ', self.s
@@ -276,7 +314,8 @@ def build_graph2():
     return g
 
 if __name__ == '__main__':
-    g = build_graph()
-    g.print_graph()
+    '''run a test'''
+    g = build_graph() #the one on the book ;)
+    g.print_graph() #useful for debug
     g.st()
 
