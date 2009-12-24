@@ -36,6 +36,8 @@ class Edge(object):
     def tuple(self):
         return self.edge
 
+    def __str__(self):
+        return 'Edge: %s->%s' % (self.edge[0],self.edge[1])
     def __getitem__(self, key):
         try:
             return self.labels[key]
