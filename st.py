@@ -151,6 +151,16 @@ class DiGraph(object):
     def print_graph(self):
         for v in self.nodes.values():
             print v, [str(ad) for ad in self.get_adiacents(v)]
+    def print_more(self):
+        for v in self.nodes.values():
+            print '%s:' % str(v),
+            for e in self.get_adiacent_edge(v):
+                print e.tuple()[1], '(',
+                for key,value in e.labels.items():
+                    print '%s=%s' % (key,value),
+                print '),',
+            print
+
 
 class Graph(DiGraph):
     def __init__(self):
