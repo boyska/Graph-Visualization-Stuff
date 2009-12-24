@@ -1,3 +1,4 @@
+from debugger import debug, info, warning
 from copy import copy
 
 class Node(object):
@@ -101,7 +102,7 @@ class DiGraph(object):
                 if not low_x:
                     low_x = low(x)
                 if low_x is None:
-                    print 'error on LOW:', x
+                    warning('error on LOW:' + str(x))
                 if low_x < min:
                     min = x['low']
             for w in [edge.tuple()[1] for edge in self.get_adiacent_edge(n) if edge['back']]:
@@ -117,20 +118,20 @@ class DiGraph(object):
             #Caso1: c'e' un arco di riporto non marcato {v,w}: viene marcato l'arco e ritornato vw
             for adiac in self.get_adiacent_edge(v):
                 if adiac['back'] and not adiac['path_mark']:
-                    print 'CASO 1: arco di riporto non marcato (v,w)'
+                    debug('CASO 1: arco di riporto non marcato (v,w)')
                     adiac['path_mark'] = True
                     return [v, adiac.tuple()[1]]
 
             #Caso 2: esiste un arco dell'albero non marcato (v,w)
             for adiac_edge in self.get_adiacent_edge(v):
                 if (not adiac['back']) and (not adiac['path_mark']):
-                    print 'CASO 2: arco dell albero non marcato'
+                    debug('CASO 2: arco dell albero non marcato')
                     #TODO: check if it works
                     ret = [v]
                     w = wi = adiac.tuple()[1]
                     adiac['path_mark'] = True
                     while True:
-                        print wi, 'ret now', [str(n) for n in ret]
+                        debug(str(wi) + 'ret now' + str([str(n) for n in ret]))
                         wi['path_mark'] = True
                         ret.append( wi)
                         for backedge in self.get_adiacent_edge(wi):
@@ -153,7 +154,6 @@ class DiGraph(object):
                                 wi = backedge.tuple()[1]
                                 wi['path_mark'] = True
                                 backedge['path_mark'] = True
-                                print 'selected', wi
                                 break
                         else: #Nothing found
                             raise Exception('Where do we go now?')
@@ -161,7 +161,7 @@ class DiGraph(object):
             #Caso 3: Esiste un arco di riporto non marcato
             for adiac in self.get_incident_edge(v):
                 if adiac['back'] and not adiac['path_mark']:
-                    print 'CASO 3: Arco di riporto non marcato (w,v)'
+                    debug('CASO 3: Arco di riporto non marcato (w,v)')
                     assert adiac.tuple()[0]['dfn'] > adiac.tuple()[1]['dfn']
                     #Risaliamo l'albero seguendo FATH
                     ret = [v]
@@ -175,14 +175,13 @@ class DiGraph(object):
                     return ret
             #Caso 4: tutti gli archi incidenti a v sono marcati
             if False not in [adiac['path_mark'] for adiac in self.get_incident_edge(v)]:
+                debug('Caso 4: tutti gli archi incidenti a v sono marcati')
                 return []
 
             raise Exception('Per %s Nessun caso va bene!!' % str(v))
 
         for v in self.nodes.values():
             low(v)
-        print 'S', self.s, self.s['low'], 'L'
-        print 'T', self.t, self.t['low'], 'L'
         #Its just a test, the real algo is a bit more complex
         stack = [self.t, self.s]
         self.s['vis'] = True
@@ -192,22 +191,18 @@ class DiGraph(object):
         v = stack.pop() #s
         while v != self.t:
             res = path(v)
-            print 'path(%s) = %s' % (str(v), [str(e) for e in res])
+            debug('path(%s) = %s' % (str(v), [str(e) for e in res]))
             if res == [] and not v['stn']:
                 v['stn'] = cont
-                print '   HURRAY!! %s ha stn = %d' % (str(v), v['stn'])
                 cont += 1
             else:
                 res.reverse()
-                print 'reversed=', [str(n) for n in res]
                 stack.extend(res[1:])
-            print 'Q', [str(n) for n in stack]
             v = stack.pop()
-            raw_input()
 
         self.t['stn'] = cont
         for n in self.nodes.values():
-            print n, n['stn']
+            debug('%s has STN: %d' % (str(n), n['stn']))
     def print_graph(self):
         for v in self.nodes.values():
             print v, [str(ad) for ad in self.get_adiacents(v)]
@@ -237,8 +232,6 @@ class Graph(DiGraph):
         for e in self.edges:
             if e.equals(n1, n2):
                 return e
-            else:
-                print [str(x) for x in e.tuple()], 'is different from', n1, n2
         return None
     def st_graph(self, s):
         '''return a DiTree that is an st-graph'''
@@ -255,7 +248,7 @@ class Graph(DiGraph):
             print n, [(str(v), v['auxvis']) for v in self.get_adiacents(n_old)]
             dg.add_node(n)
             if fath:
-                print 'FATH', fath, n
+                debug('FATH %s %s' % (str(fath), str(n)))
                 dg.add_edge(fath, n)
             n['dfn'] = count #Depth-First Numbering
             n['fath'] = fath
@@ -264,7 +257,6 @@ class Graph(DiGraph):
             n.adiacent = []
             for c in self.get_adiacents(n_old):
                 if c['auxvis'] and fath.id() != c.id(): #Already visited
-                    print 'Indietro:', n, c, '(father was:', fath, ')'
                     new_edge = dg.add_edge_by_id(n.id(), c.id()) #Arco all'indietro!!
                     new_edge['back'] = True
             new = [(n, c) for c in self.get_adiacents(n_old) if (not c['auxvis'])]
@@ -273,7 +265,6 @@ class Graph(DiGraph):
             count += 1
 
         s_t = [e for e in dg.get_adiacent_edge(dg.get_node(s.id())) if not e['back']][0]
-        print 'ST', s_t
         dg.t = dg.get_node(s.id())
         dg.s = s_t.tuple()[1]
         dg.print_more()
@@ -282,15 +273,13 @@ class Graph(DiGraph):
         return dg
 
     def st(self):
-
         random_edge = self.edges[0]
         self.s = random_edge.tuple()[0]
         self.t = random_edge.tuple()[1]
         stgraph = self.st_graph(self.s) #its a directed graph
-        return stgraph.st()
+        stgraph.st()
+        return stgraph
         low(self.s)
-        print 'S = ', self.s
-        print 'T = ', self.t
         self.t['dfs'] = 1
         self.t['low'] = 1
     
@@ -303,7 +292,7 @@ class Graph(DiGraph):
         while v != self.t:
             if not path(v):
                 v['stn'] = cont
-                print '%s ha stn = %d' % (str(v), v['stn'])
+                info( '%s ha stn = %d' % (str(v), v['stn']))
                 cont += 1
             else:
                 queue += path(v).reverse()
@@ -361,9 +350,29 @@ def build_graph2():
 
     return g
 
-if __name__ == '__main__':
-    '''run a test'''
+def test1():
     g = build_graph() #the one on the book ;)
     g.print_graph() #useful for debug
-    g.st()
+    st = g.st()
+    #S has the minimum value
+    assert st.s['stn'] == 1
+    #T has the maximum value
+    for n in st.nodes.values():
+        if n != st.t:
+            assert n['stn'] < st.t['stn']
+    #It is a valid ST-numbering
+    for n in st.nodes.values():
+        for e in st.edges:
+            if e['back']:
+                continue
+            u = e.tuple()[0]
+            v = e.tuple()[1]
+            if u['stn'] >= v['stn']:
+                warning('%s:%d -> %s:%d' % (str(u), u['stn'], str(v), v['stn']))
+            assert u['stn'] < v['stn']
+    info('The ST-numbering has been properly computed')
+
+if __name__ == '__main__':
+    '''run a test'''
+    test1()
 
