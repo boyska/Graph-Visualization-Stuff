@@ -93,6 +93,8 @@ class DiGraph(object):
 
     def st(self):
         def low(n):
+            if n['low']:
+                return n['low']
             min = n['dfn']
             for x in [edge.tuple()[1] for edge in self.get_adiacent_edge(n) if not edge['back']]:
                 low_x = x['low']
@@ -110,44 +112,102 @@ class DiGraph(object):
         def path(v):
             self.s['path_mark'] = True
             self.t['path_mark'] = True
-            self.get_edge_by_id(self.s.id(), self.t.id())['path_mark'] = True
+            self.get_edge_by_id(self.t.id(), self.s.id())['path_mark'] = True
 
             #Caso1: c'e' un arco di riporto non marcato {v,w}: viene marcato l'arco e ritornato vw
             for adiac in self.get_adiacent_edge(v):
                 if adiac['back'] and not adiac['path_mark']:
-                    print 'CASO 1'
+                    print 'CASO 1: arco di riporto non marcato (v,w)'
+                    adiac['path_mark'] = True
                     return [v, adiac.tuple()[1]]
 
             #Caso 2: esiste un arco dell'albero non marcato (v,w)
             for adiac_edge in self.get_adiacent_edge(v):
-                if not adiac['back'] and not adiac['path_mark']:
-                    print 'CASO 2'
-                    #TODO: how can we find that path?
-                    return []
-            #Caso 3:
+                if (not adiac['back']) and (not adiac['path_mark']):
+                    print 'CASO 2: arco dell albero non marcato'
+                    #TODO: check if it works
+                    ret = [v]
+                    w = wi = adiac.tuple()[1]
+                    adiac['path_mark'] = True
+                    while True:
+                        print wi, 'ret now', [str(n) for n in ret]
+                        wi['path_mark'] = True
+                        ret.append( wi)
+                        for backedge in self.get_adiacent_edge(wi):
+                            if not backedge['back']:
+                                continue
+                            u = backedge.tuple()[1]
+                            #mah...
+#                            if u['dfn'] != w['low']:
+#                                continue
+                            u_v = self.get_edge(u, v)
+                            if u_v and not u_v['back']:
+                                u['path_mark'] = True
+                                u_v['path_mark'] = True
+                                ret.append(u)
+                                return ret
+                        for treeedge in self.get_adiacent_edge(wi):
+                            if backedge['back']:
+                                continue
+                            if backedge.tuple()[1]['low'] == w['low']:
+                                wi = backedge.tuple()[1]
+                                wi['path_mark'] = True
+                                backedge['path_mark'] = True
+                                print 'selected', wi
+                                break
+                        else: #Nothing found
+                            raise Exception('Where do we go now?')
+
+            #Caso 3: Esiste un arco di riporto non marcato
             for adiac in self.get_incident_edge(v):
                 if adiac['back'] and not adiac['path_mark']:
-                    print 'CASO 3'
+                    print 'CASO 3: Arco di riporto non marcato (w,v)'
                     assert adiac.tuple()[0]['dfn'] > adiac.tuple()[1]['dfn']
                     #Risaliamo l'albero seguendo FATH
-                    ret = []
-                    wi = adiac.tuple()[1]
-                    while wi and wi != v:
+                    ret = [v]
+                    wi = adiac.tuple()[0]
+                    adiac['path_mark'] = True
+                    while wi != v:
                         wi['path_mark'] = True
-                        ret.insert(0, wi)
+                        adiac['path_mark'] = True
+                        ret.append(wi)
                         wi = wi['fath']
                     return ret
+            #Caso 4: tutti gli archi incidenti a v sono marcati
+            if False not in [adiac['path_mark'] for adiac in self.get_incident_edge(v)]:
+                return []
 
-            return []
+            raise Exception('Per %s Nessun caso va bene!!' % str(v))
 
-        low(self.s)
+        for v in self.nodes.values():
+            low(v)
         print 'S', self.s, self.s['low'], 'L'
         print 'T', self.t, self.t['low'], 'L'
-        for n in self.nodes.values():
-            print n, n['low'], n['dfn']
         #Its just a test, the real algo is a bit more complex
-        print path(self.t)
+        stack = [self.t, self.s]
+        self.s['vis'] = True
+        self.t['vis'] = True
+        self.get_edge(self.t, self.s)['vis'] = True
+        cont = 1
+        v = stack.pop() #s
+        while v != self.t:
+            res = path(v)
+            print 'path(%s) = %s' % (str(v), [str(e) for e in res])
+            if res == [] and not v['stn']:
+                v['stn'] = cont
+                print '   HURRAY!! %s ha stn = %d' % (str(v), v['stn'])
+                cont += 1
+            else:
+                res.reverse()
+                print 'reversed=', [str(n) for n in res]
+                stack.extend(res[1:])
+            print 'Q', [str(n) for n in stack]
+            v = stack.pop()
+            raw_input()
 
+        self.t['stn'] = cont
+        for n in self.nodes.values():
+            print n, n['stn']
     def print_graph(self):
         for v in self.nodes.values():
             print v, [str(ad) for ad in self.get_adiacents(v)]
