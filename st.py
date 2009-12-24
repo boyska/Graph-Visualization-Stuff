@@ -180,14 +180,9 @@ class Graph(DiGraph):
             else:
                 print [str(x) for x in e.tuple()], 'is different from', n1, n2
         return None
-    def st_graph(self, s, t):
+    def st_graph(self, s):
         '''return a DiTree that is an st-graph'''
         assert s in self.nodes.values()
-        assert t in self.nodes.values()
-        assert s!=t
-        assert self.get_edge(s,t) is not None
-        print 'S =', s
-        print 'T =', t
         dg = DiGraph()
         queue = [(None, s)]
         #s['auxvis'] = True
@@ -197,10 +192,6 @@ class Graph(DiGraph):
             if n_old['auxvis']:
                 continue
             n = Node(n_old.id())
-            if n_old == s:
-                dg.s = n
-            if n_old == t:
-                dg.t = n
             print n, [(str(v), v['auxvis']) for v in self.get_adiacents(n_old)]
             dg.add_node(n)
             if fath:
@@ -221,36 +212,21 @@ class Graph(DiGraph):
             queue += new
             count += 1
 
-        if not dg.get_edge(dg.s, dg.t):
-            aux = dg.s
-            dg.s = dg.t
-            dg.t = aux
-        dg.print_graph()
-        assert dg.get_edge(dg.s, dg.t) is not None
+        s_t = [e for e in dg.get_adiacent_edge(dg.get_node(s.id())) if not e['back']][0]
+        print 'ST', s_t
+        dg.t = dg.get_node(s.id())
+        dg.s = s_t.tuple()[1]
+        dg.print_more()
+        assert dg.get_edge(dg.t, dg.s) is not None
+        print 'S', dg.s, 'T', dg.t
         return dg
 
     def st(self):
-        def path(v):
-            #Caso1: c'e' un arco di riporto non marcato {v,w}: viene marcato l'arco e ritornato vw
-            if True in [adiac['vis'] for adiac in v.adiacent]:
-                print 'CASO 1'
-                for adiac in v.adiacent:
-                    if adiac['vis']:
-                        print "Path(%s) E' %s" % (str(v), str(adiac))
-                        return[v, adiac]
-
-            #Caso 2: esiste un arco dell'albero non marcato (v,w)
-            if True in [adiac_edge['vis'] for adiac_edge in self.get_adiacent_edge(v)]:
-                print 'CASO 2'
-                return []
-            return []
-
-
 
         random_edge = self.edges[0]
         self.s = random_edge.tuple()[0]
         self.t = random_edge.tuple()[1]
-        stgraph = self.st_graph(self.s, self.t) #its a directed graph
+        stgraph = self.st_graph(self.s) #its a directed graph
         return stgraph.st()
         low(self.s)
         print 'S = ', self.s
