@@ -25,6 +25,7 @@ class GraphScene(QtGui.QGraphicsScene):
         self.points[n.id] = QtGui.QGraphicsEllipseItem(
                 parent_coord.x()+15*n.dx, parent_coord.y()+15*n.dy, 5, 5)
         self.points[n.id].setBrush(QtGui.QColor('red'))
+        self.points[n.id].setZValue(1) #they're on top of lines
         self.addItem(self.points[n.id])
 
         if n.parent:
