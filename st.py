@@ -91,6 +91,11 @@ class DiGraph(object):
         return self.nodes[id]
     def add_node(self, node):
         self.nodes[node.id()] = node
+    def to_Graph(self):
+        g = Graph()
+        g.nodes = self.nodes
+        g.edges = self.edges
+        return g
 
     def st(self):
         def low(n):
@@ -215,7 +220,6 @@ class DiGraph(object):
                     print '%s=%s' % (key,value),
                 print '),',
             print
-
 
 class Graph(DiGraph):
     def __init__(self):
