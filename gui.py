@@ -14,17 +14,22 @@ class GraphScene(QtGui.QGraphicsScene):
     def from_gnode(self, t):
         self._gnode_to_point(t)
     def _gnode_to_point(self, n):
+        SCALE=35
+        CIRCLE_SIZE=10
         if not n:
             return
+        print 'drawing', n,
         if n.parent:
             parent_point = self.points[n.parent.id]
             parent_coord = parent_point.rect().topLeft()
         else:
             parent_coord = QtCore.QPointF(0,0)
+        print '@ (%d,%d)' % (parent_coord.x()+SCALE*n.dx, parent_coord.y()+SCALE*n.dy)
 
         self.points[n.id] = QtGui.QGraphicsEllipseItem(
-                parent_coord.x()+15*n.dx, parent_coord.y()+15*n.dy, 5, 5)
+                parent_coord.x()+SCALE*n.dx, parent_coord.y()+SCALE*n.dy, CIRCLE_SIZE, CIRCLE_SIZE)
         self.points[n.id].setBrush(QtGui.QColor('red'))
+        self.points[n.id].setToolTip(n.label)
         self.points[n.id].setZValue(1) #they're on top of lines
         self.addItem(self.points[n.id])
 
