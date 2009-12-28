@@ -65,10 +65,19 @@ def ahnentafel_list_to_tree(enc_tree, start=0):
     return node
 
 def random_tree(len):
-    l = ['1']
+    last_char = 'a'
+    l = ['a']
     for i in range(len):
-        l.append(str(random.randint(0,1)))
-    return ''.join(l)
+        yes = random.randint(0,1)
+        if yes:
+            if ord(last_char)<= ord('z'):
+                last_char = chr(1+ord(last_char))
+            else:
+                last_char = 'a'
+            l.append(last_char)
+        else:
+            l.append('0')
+    return ','.join(l)
 def hv(g):
     if not g:
         return 0
