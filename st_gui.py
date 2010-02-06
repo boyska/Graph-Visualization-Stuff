@@ -18,8 +18,10 @@ class GraphScene(QtGui.QGraphicsScene):
         i=0
         for poly in draw.lines:
             #draw line
-            dx = random.randrange(-9,9)
-            dy = random.randrange(-9,9)
+            #dx = random.randrange(-9,9)
+            #dy = random.randrange(-9,9)
+            dx = 0
+            dy = 0
             i+=1
             line_col =colors[i%5]
             for line in poly.lines:
