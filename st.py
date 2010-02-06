@@ -1,6 +1,8 @@
 from debugger import debug, info, warning
 from copy import copy
 
+import col_choose
+
 class Node(object):
     def __init__(self, name=None):
         self.name = name
@@ -131,7 +133,6 @@ class DiGraph(object):
             for adiac_edge in self.get_adiacent_edge(v):
                 if (not adiac['back']) and (not adiac['path_mark']):
                     debug('CASO 2: arco dell albero non marcato')
-                    #TODO: check if it works
                     ret = [v]
                     w = wi = adiac.tuple()[1]
                     adiac['path_mark'] = True
@@ -304,6 +305,248 @@ class Graph(DiGraph):
 
         self.t['stn'] = cont
 
+class Point(object):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+    def __eq__(self, point2):
+        return type(point2) is Point and self.x == point2.x and self.y == point2.y
+    def __str__(self):
+        return '(%d,%d)' % (self.x, self.y)
+    def __repr__(self):
+        return 'Point %s' % str(self)
+
+class Line(object):
+    def __init__(self, start, end):
+        if type(start) is Point:
+            self.start = start
+        else:
+            self.start = Point(*start)
+        if type(end) is Point:
+            self.end = end
+        else:
+            self.end = Point(*end)
+        if self.is_point():
+            warning('This line is a point!')
+    def __str__(self):
+        return 'L[%s - %s]' % (str(self.start), str(self.end))
+    def is_point(self):
+        return self.start == self.end
+    def is_horizontal(self):
+        return self.start.y == self.end.y
+    def is_vertical(self):
+        return self.start.x == self.end.x
+    def is_straight(self):
+        return self.is_vertical() or self.is_horizontal()
+
+class Polyline(object):
+    def __init__(self):
+        self.lines = []
+    def add_line(self, line):
+        if self.lines and not self.lines[-1].end == line.start:
+            raise ValueError('New line start at %s, but the previous end at %s' %\
+                    (str(line.start), str(self.lines[-1].end)))
+        if not line.is_straight():
+            raise ValueError('Line %s is not straight!')
+        if self.lines:
+            last = self.lines[-1]
+            if last.is_horizontal() and line.is_horizontal() \
+                    and not last.is_point() and not line.is_point():
+                raise ValueError('You cant concatenate two horizontal lines! %s-%s' %\
+                        (str(last), str(line)))
+            if last.is_vertical() and line.is_vertical() \
+                    and not last.is_point() and not line.is_point():
+                raise ValueError('You cant concatenate two vertical lines! %s-%s' %\
+                        (str(last), str(line)))
+        self.lines.append(line)
+    def __str__(self):
+        segments = []
+
+        if self.lines[0].is_horizontal():
+            segments.append('H(%d)%d:%d' % (self.lines[0].start.y, self.lines[0].start.x, self.lines[0].end.x))
+        else:
+            segments.append('V(%d)%d:%d' % (self.lines[0].start.x, self.lines[0].start.y, self.lines[0].end.y))
+
+        for l in self.lines[1:]:
+            if l.is_horizontal():
+                segments.append('H%d:%d' % (l.start.x, l.end.x))
+            else:
+                segments.append('V%d:%d' % (l.start.y, l.end.y))
+
+        return 'PL:[%s]' % ', '.join(segments)
+    @staticmethod
+    def hv(start, end):
+        pl = Polyline()
+        if start.x == end.x or start.y == end.y:
+            pl.add_line(Line(start, end))
+            return pl
+        pl.add_line(Line(start, (end.x, start.y)))
+        pl.add_line(Line((end.x, start.y), end))
+        return pl
+    @staticmethod
+    def vh(start, end):
+        pl = Polyline()
+        if start.x == end.x or start.y == end.y:
+            pl.add_line(Line(start, end))
+            return pl
+        pl.add_line(Line(start, (start.x, end.y)))
+        pl.add_line(Line((start.x, end.y), end))
+        return pl
+    @staticmethod
+    def hvh(start, end, passing_col):
+        pl = Polyline()
+        pl.add_line(Line(start, (passing_col, start.y)))
+        pl.add_line(Line((passing_col, start.y), (passing_col, end.y)))
+        pl.add_line(Line((passing_col, end.y), end))
+        return pl
+
+class Drawing(object):
+    def __init__(self, graph):
+        self.graph = graph.to_Graph()
+        self.positions = {} #Node.id():Point
+        self.lines = [] #Polyline()
+    def draw(self):
+        g = self.graph
+        allocated_col = [] #int TODO: do we really need it?
+        pending_edges = {} #node_from.id():[col1, col2]
+        avail_sides = {}
+        nodes = g.nodes.values()
+
+        # Initialize avail_sides
+        for n in nodes:
+            #-1 is left, 0 is down, 1 is right, 2 is up
+            avail_sides[n.id()] = [-1, 0, 1, 2]
+
+        #### Routine definitions
+        def get_position(node):
+            return self.positions[node.id()]
+        def set_position(node, column, line):
+            '''Put a node somewhere'''
+            self.positions[node.id()] = Point(column, line)
+            return self.positions[node.id()]
+        def allocate_column(node, column=None):
+            #If none, uses himself column
+            if column is None:
+                column = get_position(node).x
+            allocated_col.append(column)
+            if node.id() in pending_edges:
+                pending_edges[node.id()].append(column)
+            else:
+                pending_edges[node.id()] = [column]
+        allocate_column.leftish_col = 0
+        allocate_column.rightish_col = 3
+        def allocate_column_left(node):
+            allocate_column.leftish_col -= 1
+            allocate_column(node, allocate_column.leftish_col)
+        def allocate_column_right(node):
+            allocate_column.rightish_col += 1
+            allocate_column(node, allocate_column.rightish_col)
+
+        def stn(node):
+            return node['stn']
+        def connect_points(a, b, col):
+            pl = Polyline.hvh(get_position(a), get_position(b), col)
+            self.lines.append(pl)
+            if get_position(a).x < col:
+                avail_sides[a.id()].remove(1)
+            elif get_position(a).x == col:
+                avail_sides[a.id()].remove(2)
+            else:
+                avail_sides[a.id()].remove(-1)
+
+            if get_position(b).x < col:
+                avail_sides[b.id()].remove(1)
+            elif get_position(b).x == col:
+                avail_sides[b.id()].remove(0)
+            else:
+                avail_sides[b.id()].remove(-1)
+
+            pending_edges[a.id()].remove(col)
+
+            return pl
+
+        ### End routine definition
+
+        #Sorting by ST-Numbering is the way!
+        nodes.sort(key=stn)
+        debug(str([(n.id(), n['stn']) for n in  nodes]))
+
+        #Draw 1, 2 and the edge between them
+        v1 = nodes.pop(0)
+        v2 = nodes.pop(0)
+        set_position(v1, 0, 0) #The center of drawing is v1
+        set_position(v2, 3, 0)
+        v1_v2_line = Polyline()
+        v1_v2_line.add_line(Line((0,0), (0, -1)))
+        v1_v2_line.add_line(Line((0,-1), (3, -1)))
+        v1_v2_line.add_line(Line((3,-1), (3, 0)))
+        self.lines.append(v1_v2_line)
+        #So ugly
+        pending_edges[v1.id()] = []
+        pending_edges[v2.id()] = []
+        allocate_column(v1)
+        if len(g.get_adiacents(v1)) > 2:
+            allocate_column(v1, 1)
+        if len(g.get_adiacents(v1)) > 3:
+            allocate_column_left(v1)
+        allocate_column(v2)
+        if len(g.get_adiacents(v2)) > 2:
+            allocate_column(v2, 2)
+        if len(g.get_adiacents(v2)) > 3:
+            allocate_column_right(v2)
+
+        line = 1
+        v = nodes.pop(0)
+        while len(nodes) >= 1:
+            print 'now on', v
+            print pending_edges
+            #Choose column
+            available_cols = []
+            for x in g.get_adiacents(v):
+                if x.id() in pending_edges:
+                    for edge in pending_edges[x.id()]:
+                        available_cols.append((edge, x.id()))
+            if not available_cols:
+                raise Exception('sth went wrong: no available columns!')
+            #col is the chosen column
+            degree = len([x for x in g.get_adiacents(v) if x['stn'] < v['stn']])
+            if degree == 1:
+                col = available_cols[0][0]
+                chosen_col = [available_cols[0]]
+                set_position(v, col, line)
+            else:
+                debug('Choosing col for %s from %s' % (v.id(), str(available_cols)))
+                col = available_cols[len(available_cols)/2]
+                chosen_col = col_choose.column_choose(available_cols)
+                print available_cols, '=>', chosen_col
+                col = chosen_col[len(chosen_col)/2][0]
+                set_position(v, col, line)
+                debug('Chosen: %d' % col)
+            for column in chosen_col:
+                debug('Connect %s to %s through %d' % (column[1], v.id(), column[0]))
+                connect_points(g.nodes[column[1]], v, column[0])
+
+            out_degree = len(avail_sides[v.id()])
+            print avail_sides[v.id()]
+            debug('%s has %d out_degree' % (v.id(), out_degree))
+            allocate_column(v)
+            if out_degree > 1:
+                if -1 in avail_sides[v.id()]:
+                    allocate_column_left(v)
+                    if out_degree > 2:
+                        assert 1 in avail_sides[v.id()]
+                        allocate_column_right(v)
+                else:
+                    assert out_degree == 2
+                    allocate_column_right(v)
+            #TODO: last node
+
+            line += 1
+            v = nodes.pop(0)
+
+        print self.positions
+        
+
 def build_graph():
     a = Node('a')
     b = Node('b')
@@ -358,25 +601,22 @@ def test1():
     g = build_graph() #the one on the book ;)
     g.print_graph() #useful for debug
     st = g.st()
+    return st
+
+def stn_check(st):
     #S has the minimum value
     assert st.s['stn'] == 1
     #T has the maximum value
     for n in st.nodes.values():
         if n != st.t:
             assert n['stn'] < st.t['stn']
-    #It is a valid ST-numbering
-    for n in st.nodes.values():
-        for e in st.edges:
-            if e['back']:
-                continue
-            u = e.tuple()[0]
-            v = e.tuple()[1]
-            if u['stn'] >= v['stn']:
-                warning('%s:%d -> %s:%d' % (str(u), u['stn'], str(v), v['stn']))
-            assert u['stn'] < v['stn']
+    #TODO: complete st-numbering check
     info('The ST-numbering has been properly computed')
 
 if __name__ == '__main__':
     '''run a test'''
-    test1()
+    dg = test1()
+    stn_check(dg)
+    draw = Drawing(dg)
+    draw.draw()
 
