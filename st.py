@@ -309,6 +309,14 @@ class Point(object):
     def __init__(self, x, y):
         self.x = x
         self.y = y
+    def __add__(self, point):
+        if not isinstance(point, Point):
+            try:
+                point = Point(*point)
+            except:
+                raise ValueError('%s is not a valid Point' % str(point))
+        self.x += point.x
+        self.y += point.y
     def __eq__(self, point2):
         return type(point2) is Point and self.x == point2.x and self.y == point2.y
     def __str__(self):
@@ -445,7 +453,18 @@ class Drawing(object):
         def stn(node):
             return node['stn']
         def connect_points(a, b, col):
-            pl = Polyline.hvh(get_position(a), get_position(b), col)
+            if avail_sides[v.id()] == [2]: #Last, 4-degree node
+                pl = Polyline.hvh(get_position(a), get_position(b)+(0,1), col)
+                pl.append(Line(get_position(b)+(0,1), get_position(b)))
+            else:
+                pl = Polyline.hvh(get_position(a), get_position(b), col)
+                if get_position(b).x < col:
+                    avail_sides[b.id()].remove(1)
+                elif get_position(b).x == col:
+                    avail_sides[b.id()].remove(0)
+                else:
+                    avail_sides[b.id()].remove(-1)
+
             self.lines.append(pl)
             if get_position(a).x < col:
                 avail_sides[a.id()].remove(1)
@@ -453,13 +472,6 @@ class Drawing(object):
                 avail_sides[a.id()].remove(2)
             else:
                 avail_sides[a.id()].remove(-1)
-
-            if get_position(b).x < col:
-                avail_sides[b.id()].remove(1)
-            elif get_position(b).x == col:
-                avail_sides[b.id()].remove(0)
-            else:
-                avail_sides[b.id()].remove(-1)
 
             pending_edges[a.id()].remove(col)
 
@@ -497,7 +509,7 @@ class Drawing(object):
 
         line = 1
         v = nodes.pop(0)
-        while len(nodes) >= 1:
+        while len(nodes) >= 0:
             print 'now on', v
             print pending_edges
             #Choose column
@@ -539,10 +551,16 @@ class Drawing(object):
                 else:
                     assert out_degree == 2
                     allocate_column_right(v)
-            #TODO: last node
 
             line += 1
-            v = nodes.pop(0)
+            try:
+                v = nodes.pop(0)
+            except:
+                break
+        #TODO: last node
+        #We could have 4 incoming edges!
+        
+
 
         print self.positions
         
