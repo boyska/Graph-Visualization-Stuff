@@ -64,6 +64,32 @@ def ahnentafel_list_to_tree(enc_tree, start=0):
         node.set_right_child(right_child)
     return node
 
+def fib_tree(h):
+    l = ['0'] * (2**h-1)
+    def fib_rec(l, start, subheigth):
+        if subheigth <= 0:
+            return
+        l[start] = '1'
+        fib_rec(l, 2*start+1, subheigth-1)
+        fib_rec(l, 2*start+2, subheigth-2)
+    fib_rec(l, 0, h)
+    while l[-1] == '0':
+        l.pop()
+
+    return ''.join(l)
+def fib_check(ahnentafel):
+    raise NotImplementedError()
+def complete_tree(h):
+    l = []
+    last = 'a'
+    for i in range(2**h-1):
+        l.append(last)
+        if ord(last) < ord('z'):
+            last = chr(1+ord(last))
+        else:
+            last = 'a'
+    return ','.join(l)
+
 def random_tree(len):
     last_char = 'a'
     l = ['a']

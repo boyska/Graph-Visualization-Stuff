@@ -59,7 +59,17 @@ class Window(QtGui.QMainWindow):
         self.connect(self.input, QtCore.SIGNAL('editingFinished()'), self.on_ok)
         self.random = QtGui.QPushButton('random')
         self.input_hbox.addWidget(self.random)
+        self.spin_box = QtGui.QSpinBox()
+        self.spin_box.setMaximum(10)
+        self.spin_box.setMinimum(1)
+        self.input_hbox.addWidget(self.spin_box)
+        self.complete = QtGui.QPushButton('complete')
+        self.input_hbox.addWidget(self.complete)
+        self.fib = QtGui.QPushButton('fib')
+        self.input_hbox.addWidget(self.fib)
         self.connect(self.random, QtCore.SIGNAL('clicked()'), self.on_random)
+        self.connect(self.complete, QtCore.SIGNAL('clicked()'), self.on_complete)
+        self.connect(self.fib, QtCore.SIGNAL('clicked()'), self.on_fib)
 
         self.main_vbox.addWidget(self.view)
         self.main_vbox.addLayout(self.input_hbox)
@@ -77,6 +87,16 @@ class Window(QtGui.QMainWindow):
         scene.from_gnode(tree)
         self.view.setScene(scene)
         self.view.resetCachedContent()
+    
+    def on_fib(self):
+        ahnentafel_enc = hv.fib_tree(self.spin_box.value())
+        self.input.setText(ahnentafel_enc)
+        self.on_ok()
+    
+    def on_complete(self):
+        ahnentafel_enc = hv.complete_tree(self.spin_box.value())
+        self.input.setText(ahnentafel_enc)
+        self.on_ok()
     
     def on_random(self):
         ahnentafel_enc = hv.random_tree(random.randint(5, 15))
