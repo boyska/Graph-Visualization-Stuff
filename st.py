@@ -314,7 +314,7 @@ class Point(object):
             try:
                 point = Point(*point)
             except:
-                raise ValueError('%s is not a valid Point' % str(point))
+                raise TypeError('%s is not a valid Point' % str(point))
         self.x += point.x
         self.y += point.y
     def __eq__(self, point2):
