@@ -1,13 +1,15 @@
 #PRE: receives a list of column
 #Each column is a tuple (col, node)
 #POST: return an "assignment": (col, node), (col, node), (col, node)
-
+#where each node is present just once.
 def column_choose(avail_col):
     avail_col.sort()
     incoming = set()
     for col in avail_col:
         incoming.add(col[1])
     n_incoming = len(incoming)
+    if n_incoming == 1:
+        return (avail_col[0],)
     del incoming
 
     print avail_col

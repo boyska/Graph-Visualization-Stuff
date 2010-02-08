@@ -522,18 +522,18 @@ class Drawing(object):
                 raise Exception('sth went wrong: no available columns!')
             #col is the chosen column
             degree = len([x for x in g.get_adiacents(v) if x['stn'] < v['stn']])
-            if degree == 1:
-                col = available_cols[0][0]
-                chosen_col = [available_cols[0]]
-                set_position(v, col, line)
-            else:
-                debug('Choosing col for %s from %s' % (v.id(), str(available_cols)))
-                col = available_cols[len(available_cols)/2]
-                chosen_col = col_choose.column_choose(available_cols)
-                print available_cols, '=>', chosen_col
-                col = chosen_col[len(chosen_col)/2][0]
-                set_position(v, col, line)
-                debug('Chosen: %d' % col)
+#            if degree == 1:
+#                col = available_cols[0][0]
+#                chosen_col = [available_cols[0]]
+#                set_position(v, col, line)
+#            else:
+            debug('Choosing col for %s from %s' % (v.id(), str(available_cols)))
+            col = available_cols[len(available_cols)/2]
+            chosen_col = col_choose.column_choose(available_cols)
+            print available_cols, '=>', chosen_col
+            col = chosen_col[len(chosen_col)/2][0]
+            set_position(v, col, line)
+            debug('Chosen: %d' % col)
             for column in chosen_col:
                 debug('Connect %s to %s through %d' % (column[1], v.id(), column[0]))
                 connect_points(g.nodes[column[1]], v, column[0])
