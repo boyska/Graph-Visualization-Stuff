@@ -565,7 +565,7 @@ class Drawing(object):
         print self.positions
         
 
-def build_graph():
+def build_graph1():
     a = Node('a')
     b = Node('b')
     c = Node('c')
@@ -592,34 +592,61 @@ def build_graph():
 
     return g
 
-def build_graph2():
-    s = Node('s')
-    t = Node('t')
+def build_graph_k4():
     a = Node('a')
     b = Node('b')
     c = Node('c')
+    d = Node('d')
     g = Graph()
-    g.add_node(s)
-    g.add_node(t)
     g.add_node(a)
     g.add_node(b)
     g.add_node(c)
-    g.add_edge(s, t)
-    g.add_edge(s, a)
-    g.add_edge(s, b)
-    g.add_edge(s, c)
+    g.add_node(d)
     g.add_edge(a, b)
+    g.add_edge(a, c)
+    g.add_edge(a, d)
+    g.add_edge(b, a)
+    g.add_edge(b, d)
+    g.add_edge(b, c)
+    g.add_edge(c, a)
     g.add_edge(c, b)
-    g.add_edge(t, b)
-    g.add_edge(t, c)
+    g.add_edge(c, d)
+    g.add_edge(d, a)
+    g.add_edge(d, b)
+    g.add_edge(d, c)
 
     return g
 
-def test1():
-    g = build_graph() #the one on the book ;)
-    g.print_graph() #useful for debug
-    st = g.st()
-    return st
+def build_graph_k5():
+    a = Node('a')
+    b = Node('b')
+    c = Node('c')
+    d = Node('d')
+    e = Node('e')
+    g = Graph()
+    g.add_node(a)
+    g.add_node(b)
+    g.add_node(c)
+    g.add_node(d)
+    g.add_node(e)
+    g.add_edge(a, b)
+    g.add_edge(a, c)
+    g.add_edge(a, d)
+    g.add_edge(a, e)
+    g.add_edge(b, a)
+    g.add_edge(b, c)
+    g.add_edge(b, d)
+    g.add_edge(b, e)
+    g.add_edge(c, a)
+    g.add_edge(c, b)
+    g.add_edge(c, d)
+    g.add_edge(c, e)
+    g.add_edge(d, a)
+    g.add_edge(d, b)
+    g.add_edge(d, c)
+    g.add_edge(d, e)
+
+    return g
 
 def stn_check(st):
     #S has the minimum value

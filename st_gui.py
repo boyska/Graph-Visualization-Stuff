@@ -53,6 +53,7 @@ class GraphScene(QtGui.QGraphicsScene):
 
     
 
+start_time = end_time = 0
 class Window(QtGui.QMainWindow):
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
@@ -62,14 +63,15 @@ class Window(QtGui.QMainWindow):
         self.main_vbox = QtGui.QVBoxLayout()
                 
         self.input_hbox = QtGui.QHBoxLayout()
-        self.input = QtGui.QLineEdit()
-        self.input_hbox.addWidget(self.input)
-        self.ok = QtGui.QPushButton('OK')
-        self.input_hbox.addWidget(self.ok)
-        self.connect(self.ok, QtCore.SIGNAL('clicked()'), self.on_ok)
-        self.connect(self.input, QtCore.SIGNAL('editingFinished()'), self.on_ok)
-        self.random = QtGui.QPushButton('random')
-        self.input_hbox.addWidget(self.random)
+        self.test1 = QtGui.QPushButton('Test 1')
+        self.input_hbox.addWidget(self.test1)
+        self.connect(self.test1, QtCore.SIGNAL('clicked()'), self.on_test1)
+        self.testk4 = QtGui.QPushButton('Test K4')
+        self.input_hbox.addWidget(self.testk4)
+        self.connect(self.testk4, QtCore.SIGNAL('clicked()'), self.on_testk4)
+        self.testk5 = QtGui.QPushButton('Test K5')
+        self.input_hbox.addWidget(self.testk5)
+        self.connect(self.testk5, QtCore.SIGNAL('clicked()'), self.on_testk5)
 
         self.main_vbox.addWidget(self.view)
         self.main_vbox.addLayout(self.input_hbox)
@@ -78,11 +80,10 @@ class Window(QtGui.QMainWindow):
         self.setCentralWidget(widg)
         self.centralWidget().setLayout(self.main_vbox)
     
-    def on_ok(self):
-        scene = GraphScene()
-        start_time = time.time()
-        graph = st.build_graph()
-        stgraph = st.test1()
+    def draw(self, graph):
+        global start_time
+        global end_time
+        stgraph = graph.st()
         draw = st.Drawing(stgraph)
         try:
             draw.draw()
@@ -91,9 +92,26 @@ class Window(QtGui.QMainWindow):
             print e
         end_time = time.time()
         print 'Computing time: %.3f' % (end_time - start_time)
+        scene = GraphScene()
         scene.from_drawing(draw)
         self.view.setScene(scene)
         self.view.resetCachedContent()
+
+    def on_testk5(self):
+        global start_time
+        start_time = time.time()
+        graph = st.build_graph_k5()
+        self.draw(graph)
+    def on_testk4(self):
+        global start_time
+        start_time = time.time()
+        graph = st.build_graph_k4()
+        self.draw(graph)
+    def on_test1(self):
+        global start_time
+        start_time = time.time()
+        graph = st.build_graph1()
+        self.draw(graph)
 
 
 if __name__ == '__main__':
