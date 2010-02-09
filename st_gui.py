@@ -75,6 +75,14 @@ class Window(QtGui.QMainWindow):
         self.testcycle = QtGui.QPushButton('Test cycle')
         self.input_hbox.addWidget(self.testcycle)
         self.connect(self.testcycle, QtCore.SIGNAL('clicked()'), self.on_testcycle)
+        self.testrandom = QtGui.QPushButton('Test random')
+        self.input_hbox.addWidget(self.testrandom)
+        self.connect(self.testrandom, QtCore.SIGNAL('clicked()'), self.on_testrandom)
+        self.spin_box = QtGui.QSpinBox()
+        self.spin_box.setMaximum(20)
+        self.spin_box.setMinimum(3)
+        self.spin_box.setValue(6)
+        self.input_hbox.addWidget(self.spin_box)
 
         self.main_vbox.addWidget(self.view)
         self.main_vbox.addLayout(self.input_hbox)
@@ -113,7 +121,12 @@ class Window(QtGui.QMainWindow):
     def on_testcycle(self):
         global start_time
         start_time = time.time()
-        graph = st.build_graph_cycle()
+        graph = st.build_graph_cycle(self.spin_box.value())
+        self.draw(graph)
+    def on_testrandom(self):
+        global start_time
+        start_time = time.time()
+        graph = st.build_graph_random(self.spin_box.value())
         self.draw(graph)
     def on_test1(self):
         global start_time

@@ -1,5 +1,6 @@
 from debugger import debug, info, warning
 from copy import copy
+import random
 
 import col_choose
 
@@ -651,26 +652,33 @@ def build_graph_k5():
 
     return g
 
-def build_graph_cycle():
-    a = Node('a')
-    b = Node('b')
-    c = Node('c')
-    d = Node('d')
-    e = Node('e')
-    f = Node('f')
+def build_graph_cycle(n=6):
     g = Graph()
-    g.add_node(a)
-    g.add_node(b)
-    g.add_node(c)
-    g.add_node(d)
-    g.add_node(e)
-    g.add_node(f)
-    g.add_edge(a, b)
-    g.add_edge(b, c)
-    g.add_edge(c, d)
-    g.add_edge(d, e)
-    g.add_edge(e, f)
-    g.add_edge(a, f)
+    first = None
+    prev = None
+    for i in range(n):
+        node = Node(chr(ord('a')+i))
+        g.add_node(node)
+        if prev:
+            g.add_edge(prev, node)
+        else:
+            first = node
+        prev = node
+    g.add_edge(node, first)
+    return g
+
+
+
+def build_graph_random(n=6):
+    g = build_graph_cycle(n)
+    for a in g.nodes.values():
+        for b in g.nodes.values():
+            if a == b:
+                continue
+            if len(g.get_adiacents(a)) == 4 or len(g.get_adiacents(b)) ==4:
+                continue
+            if random.randint(0,1):
+                g.add_edge(a,b)
 
     return g
 
