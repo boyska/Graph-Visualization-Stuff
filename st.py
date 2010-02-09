@@ -315,8 +315,11 @@ class Point(object):
                 point = Point(*point)
             except:
                 raise TypeError('%s is not a valid Point' % str(point))
-        self.x += point.x
-        self.y += point.y
+        new = copy(self)
+        new.x += point.x
+        new.y += point.y
+        print self, '+', point, '=', new
+        return new
     def __eq__(self, point2):
         return type(point2) is Point and self.x == point2.x and self.y == point2.y
     def __str__(self):
@@ -335,7 +338,7 @@ class Line(object):
         else:
             self.end = Point(*end)
         if self.is_point():
-            warning('This line is a point!')
+            warning('%s:This line is a point!' % str(self))
     def __str__(self):
         return 'L[%s - %s]' % (str(self.start), str(self.end))
     def is_point(self):
@@ -453,9 +456,9 @@ class Drawing(object):
         def stn(node):
             return node['stn']
         def connect_points(a, b, col):
-            if avail_sides[v.id()] == [2]: #Last, 4-degree node
+            if avail_sides[b.id()] == [2]: #Last, 4-degree node
                 pl = Polyline.hvh(get_position(a), get_position(b)+(0,1), col)
-                pl.append(Line(get_position(b)+(0,1), get_position(b)))
+                pl.add_line(Line(get_position(b)+(0,1), get_position(b)))
             else:
                 pl = Polyline.hvh(get_position(a), get_position(b), col)
                 if get_position(b).x < col:
@@ -531,7 +534,7 @@ class Drawing(object):
             col = available_cols[len(available_cols)/2]
             chosen_col = col_choose.column_choose(available_cols)
             print available_cols, '=>', chosen_col
-            col = chosen_col[len(chosen_col)/2][0]
+            col = chosen_col[(len(chosen_col)-1)/2][0]
             set_position(v, col, line)
             debug('Chosen: %d' % col)
             for column in chosen_col:
@@ -660,7 +663,7 @@ def stn_check(st):
 
 if __name__ == '__main__':
     '''run a test'''
-    dg = test1()
+    dg = build_graph_k5().st()
     stn_check(dg)
     draw = Drawing(dg)
     draw.draw()
