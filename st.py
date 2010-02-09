@@ -651,6 +651,29 @@ def build_graph_k5():
 
     return g
 
+def build_graph_cycle():
+    a = Node('a')
+    b = Node('b')
+    c = Node('c')
+    d = Node('d')
+    e = Node('e')
+    f = Node('f')
+    g = Graph()
+    g.add_node(a)
+    g.add_node(b)
+    g.add_node(c)
+    g.add_node(d)
+    g.add_node(e)
+    g.add_node(f)
+    g.add_edge(a, b)
+    g.add_edge(b, c)
+    g.add_edge(c, d)
+    g.add_edge(d, e)
+    g.add_edge(e, f)
+    g.add_edge(a, f)
+
+    return g
+
 def stn_check(st):
     #S has the minimum value
     assert st.s['stn'] == 1

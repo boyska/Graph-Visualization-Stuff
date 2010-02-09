@@ -72,6 +72,9 @@ class Window(QtGui.QMainWindow):
         self.testk5 = QtGui.QPushButton('Test K5')
         self.input_hbox.addWidget(self.testk5)
         self.connect(self.testk5, QtCore.SIGNAL('clicked()'), self.on_testk5)
+        self.testcycle = QtGui.QPushButton('Test cycle')
+        self.input_hbox.addWidget(self.testcycle)
+        self.connect(self.testcycle, QtCore.SIGNAL('clicked()'), self.on_testcycle)
 
         self.main_vbox.addWidget(self.view)
         self.main_vbox.addLayout(self.input_hbox)
@@ -106,6 +109,11 @@ class Window(QtGui.QMainWindow):
         global start_time
         start_time = time.time()
         graph = st.build_graph_k4()
+        self.draw(graph)
+    def on_testcycle(self):
+        global start_time
+        start_time = time.time()
+        graph = st.build_graph_cycle()
         self.draw(graph)
     def on_test1(self):
         global start_time
