@@ -78,6 +78,10 @@ class Window(QtGui.QMainWindow):
         self.testrandom = QtGui.QPushButton('Test random')
         self.input_hbox.addWidget(self.testrandom)
         self.connect(self.testrandom, QtCore.SIGNAL('clicked()'), self.on_testrandom)
+        self.testfail1 = QtGui.QPushButton('Test fail1')
+        self.input_hbox.addWidget(self.testfail1)
+        self.connect(self.testfail1, QtCore.SIGNAL('clicked()'), self.on_testfail1)
+
         self.spin_box = QtGui.QSpinBox()
         self.spin_box.setMaximum(20)
         self.spin_box.setMinimum(3)
@@ -94,11 +98,12 @@ class Window(QtGui.QMainWindow):
     def draw(self, graph):
         global start_time
         global end_time
+        self.view.setScene(None)
         stgraph = graph.st()
         draw = st.Drawing(stgraph)
         try:
             draw.draw()
-        except Exception, e: 
+        except Exception, e:
             print 'EXCEPTION'
             print e
         end_time = time.time()
@@ -122,6 +127,11 @@ class Window(QtGui.QMainWindow):
         global start_time
         start_time = time.time()
         graph = st.build_graph_cycle(self.spin_box.value())
+        self.draw(graph)
+    def on_testfail1(self):
+        global start_time
+        start_time = time.time()
+        graph = st.build_graph_fail1()
         self.draw(graph)
     def on_testrandom(self):
         global start_time

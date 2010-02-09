@@ -561,11 +561,6 @@ class Drawing(object):
                 v = nodes.pop(0)
             except:
                 break
-        #TODO: last node
-        #We could have 4 incoming edges!
-        
-
-
         print self.positions
         
 
@@ -593,6 +588,36 @@ def build_graph1():
     g.add_edge(c, e)
     g.add_edge(f, e)
     g.add_edge(d, f)
+
+    return g
+
+def build_graph_fail1():
+    a = Node('a')
+    b = Node('b')
+    c = Node('c')
+    d = Node('d')
+    e = Node('e')
+    f = Node('f')
+    g = Graph()
+    g.add_node(a)
+    g.add_node(b)
+    g.add_node(c)
+    g.add_node(d)
+    g.add_node(e)
+    g.add_node(f)
+    g.add_edge(a, c)
+    g.add_edge(c, b)
+    g.add_edge(b, d)
+    g.add_edge(b, c)
+    g.add_edge(b, d)
+    g.add_edge(e, d)
+    g.add_edge(e, f)
+    g.add_edge(b, a)
+    g.add_edge(d, a)
+    g.add_edge(d, c)
+    g.add_edge(e, c)
+    g.add_edge(f, b)
+    g.add_edge(f, a)
 
     return g
 
