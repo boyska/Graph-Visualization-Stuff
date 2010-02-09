@@ -533,7 +533,7 @@ class Drawing(object):
             debug('Choosing col for %s from %s' % (v.id(), str(available_cols)))
             col = available_cols[len(available_cols)/2]
             chosen_col = col_choose.column_choose(available_cols)
-            print available_cols, '=>', chosen_col
+            #print available_cols, '=>', chosen_col
             col = chosen_col[(len(chosen_col)-1)/2][0]
             set_position(v, col, line)
             debug('Chosen: %d' % col)
@@ -541,7 +541,7 @@ class Drawing(object):
                 debug('Connect %s to %s through %d' % (column[1], v.id(), column[0]))
                 connect_points(g.nodes[column[1]], v, column[0])
 
-            out_degree = len(avail_sides[v.id()])
+            out_degree = len(g.get_adiacents(v)) - 4 + len(avail_sides[v.id()])
             print avail_sides[v.id()]
             debug('%s has %d out_degree' % (v.id(), out_degree))
             allocate_column(v)
