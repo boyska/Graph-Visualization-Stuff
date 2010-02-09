@@ -9,7 +9,7 @@ def column_choose(avail_col):
         incoming.add(col[1])
     n_incoming = len(incoming)
     if n_incoming == 1:
-        return (avail_col[0],)
+        return (avail_col[len(avail_col)/2],)
     del incoming
 
     print avail_col
