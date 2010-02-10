@@ -69,9 +69,14 @@ def fib_tree(h):
     def fib_rec(l, start, subheigth):
         if subheigth <= 0:
             return
-        l[start] = '1'
+        l[start] = fib_rec.last
+        if ord(fib_rec.last) < ord('z'):
+            fib_rec.last = chr(1+ord(fib_rec.last))
+        else:
+            fib_rec.last = 'a'
         fib_rec(l, 2*start+1, subheigth-1)
         fib_rec(l, 2*start+2, subheigth-2)
+    fib_rec.last = 'a'
     fib_rec(l, 0, h)
     while l[-1] == '0':
         l.pop()
