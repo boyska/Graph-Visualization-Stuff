@@ -10,6 +10,7 @@ class GraphScene(QtGui.QGraphicsScene):
         QtGui.QGraphicsScene.__init__(self)
         self.points = {} #id:item
         self.lines = {}
+        self.labels = {}
     
     def from_gnode(self, t):
         self._gnode_to_point(t)
@@ -31,6 +32,12 @@ class GraphScene(QtGui.QGraphicsScene):
         self.points[n.id].setBrush(QtGui.QColor('red'))
         self.points[n.id].setToolTip(n.label)
         self.points[n.id].setZValue(1) #they're on top of lines
+
+        self.labels[n.id] = QtGui.QGraphicsTextItem(n.label)
+        self.labels[n.id].setPos(
+                parent_coord.x()+SCALE*n.dx + CIRCLE_SIZE, parent_coord.y()+SCALE*n.dy)
+        self.labels[n.id].setZValue(2) #they're on top of everythin
+        self.addItem(self.labels[n.id])
         self.addItem(self.points[n.id])
 
         if n.parent:
@@ -60,7 +67,7 @@ class Window(QtGui.QMainWindow):
         self.random = QtGui.QPushButton('random')
         self.input_hbox.addWidget(self.random)
         self.spin_box = QtGui.QSpinBox()
-        self.spin_box.setMaximum(10)
+        self.spin_box.setMaximum(40)
         self.spin_box.setMinimum(1)
         self.input_hbox.addWidget(self.spin_box)
         self.complete = QtGui.QPushButton('complete')
