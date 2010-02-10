@@ -82,13 +82,15 @@ def fib_tree(h):
         if subheigth <= 0:
             return
         l[start] = fib_rec.last
-        if ord(fib_rec.last) < ord('z'):
-            fib_rec.last = chr(1+ord(fib_rec.last))
-        else:
+        if ord(fib_rec.last) == ord('z'):
+            fib_rec.last = 'A'
+        elif ord(fib_rec.last) == ord('Z'):
             fib_rec.last = 'a'
+        else:
+            fib_rec.last = chr(1+ord(fib_rec.last))
         fib_rec(l, 2*start+1, subheigth-1)
         fib_rec(l, 2*start+2, subheigth-2)
-    fib_rec.last = 'a'
+    fib_rec.last = 'A'
     fib_rec(l, 0, h)
     while l[-1] == '0':
         l.pop()
@@ -98,13 +100,15 @@ def fib_check(ahnentafel):
     raise NotImplementedError()
 def complete_tree(h):
     l = []
-    last = 'a'
+    last = 'A'
     for i in range(2**h-1):
         l.append(last)
-        if ord(last) < ord('z'):
-            last = chr(1+ord(last))
-        else:
+        if ord(last) == ord('z'):
+            last = 'A'
+        elif ord(last) == ord('Z'):
             last = 'a'
+        else:
+            last = chr(1+ord(last))
     return ','.join(l)
 
 def random_tree(len):
