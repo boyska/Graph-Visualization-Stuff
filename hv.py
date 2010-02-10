@@ -43,6 +43,18 @@ class GNode(object):
             print ' '*(indent+0),
             print 'right:'
             self.childs[1].print_tree(indent+4)
+
+    def to_graphviz(self):
+        res = ''
+        if self.childs[0]:
+            res = '%s%s -> %s;\n' % (res, self.label, self.childs[0].label)
+            res = '%s%s' % (res, self.childs[0].to_graphviz())
+        if self.childs[1]:
+            res = '%s%s -> %s;\n' % (res, self.label, self.childs[1].label)
+            res = '%s%s' % (res, self.childs[1].to_graphviz())
+        return res
+
+        
         
 def ahnentafel_to_tree(enc_tree):
     if ',' in enc_tree:

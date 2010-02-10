@@ -90,6 +90,8 @@ class Window(QtGui.QMainWindow):
         print 'ok'
         scene = GraphScene()
         tree = hv.ahnentafel_to_tree(str(self.input.text()))
+        with open('lastgraph.dot', 'w') as buf:
+            buf.write('digraph G {\n%s}\n' % tree.to_graphviz())
         hv.hv(tree)
         scene.from_gnode(tree)
         self.view.setScene(scene)
