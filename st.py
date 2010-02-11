@@ -715,8 +715,15 @@ def build_graph_cycle(n=6):
     g = Graph()
     first = None
     prev = None
+    last = 'A'
     for i in range(n):
-        node = Node(chr(ord('a')+i))
+        node = Node(last)
+        if last == 'Z':
+            last = 'a'
+        elif last == 'z':
+            last = 'A'
+        else:
+            last = chr(ord(last)+1)
         g.add_node(node)
         if prev:
             g.add_edge(prev, node)
