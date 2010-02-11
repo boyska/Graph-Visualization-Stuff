@@ -2,3 +2,7 @@
 *.swp
 *.swo
 *~
+*.dot
+*.dot.*
+*.png
+*.jpg

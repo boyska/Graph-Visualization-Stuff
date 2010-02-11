@@ -94,6 +94,16 @@ class DiGraph(object):
         return self.nodes[id]
     def add_node(self, node):
         self.nodes[node.id()] = node
+    def generating_code(self):
+        res = 'g = Graph()\n'
+        for i in self.nodes.values():
+            res += 'nodo_%s = Node("%s")\n' % (i.name,i.name)
+            res += 'g.add_node(nodo_%s)\n' % i.name
+        for e in self.edges:
+            n1, n2 = e.tuple()
+            res += 'g.add_edge_by_id("%s", "%s")\n' % (n1.name, n2.name)
+        res += 'return g'
+        return res
     def to_Graph(self):
         g = Graph()
         g.nodes = self.nodes
@@ -222,6 +232,33 @@ class DiGraph(object):
                     print '%s=%s' % (key,value),
                 print '),',
             print
+    def to_graphviz(self):
+        res = ''
+        for n in self.nodes.values():
+            str_n = '%s_%d_%d' % (n.name, n['low'], n['dfn'])
+            if n['path_mark']:
+                n_color = 'red'
+            else:
+                n_color='black'
+            if n == self.s:
+                res += '%s [shape=box color=%s];\n' % (str_n, n_color)
+            elif n == self.t:
+                res += '%s [shape=triangle color = %s];\n' % (str_n, n_color)
+            else:
+                res += '%s [color = %s];\n' % (str_n, n_color)
+            for e in self.get_adiacent_edge(n):
+                b = e.tuple()[1]
+                str_b = '%s_%d_%d' % (b.name, b['low'], b['dfn'])
+                if e['path_mark']:
+                    color = 'red'
+                else:
+                    color = 'black'
+                if b['back']:
+                    res += '%s -> %s [style=dotted color=%s];\n' % (str_n, str_b, color)
+                else:
+                    res += '%s -> %s [color=%s];\n' % (str_n, str_b, color)
+        return res
+
 
 class Graph(DiGraph):
     def __init__(self):
