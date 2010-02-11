@@ -126,7 +126,7 @@ class Window(QtGui.QMainWindow):
         start_time = time.time()
         graph = st.build_graph_random(self.spin_box.value())
         self.draw(graph)
-        print graph.generating_code()
+        debug(graph.generating_code())
 
     def on_test1(self):
         global start_time

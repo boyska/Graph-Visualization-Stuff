@@ -238,17 +238,23 @@ class DiGraph(object):
         for n in self.nodes.values():
             debug('%s has STN: %d' % (str(n), n['stn']))
     def print_graph(self):
+        res = ''
         for v in self.nodes.values():
-            print v, [str(ad) for ad in self.get_adiacents(v)]
+            res +=  '%s %s\n' % (str(v), str([str(ad) for ad in self.get_adiacents(v)]))
+        debug(res)
+        return res
     def print_more(self):
+        res = ''
         for v in self.nodes.values():
-            print '%s:' % str(v),
+            res += '%s:' % str(v)
             for e in self.get_adiacent_edge(v):
-                print e.tuple()[1], '(',
+                res += '%s (' % str(e.tuple()[1])
                 for key,value in e.labels.items():
-                    print '%s=%s' % (key,value),
-                print '),',
-            print
+                    res += '%s=%s' % (key,value)
+                res += '),'
+            res += '\n'
+        debug(res)
+        return res
     def to_graphviz(self):
         res = ''
         for n in self.nodes.values():
@@ -305,7 +311,7 @@ class Graph(DiGraph):
             if n_old['auxvis']:
                 continue
             n = Node(n_old.id())
-            print n, [(str(v), v['auxvis']) for v in self.get_adiacents(n_old)]
+            debug('%s %s' % (str(n), str([(str(v), v['auxvis']) for v in self.get_adiacents(n_old)])))
             dg.add_node(n)
             if fath:
                 debug('FATH %s %s' % (str(fath), str(n)))
@@ -329,7 +335,7 @@ class Graph(DiGraph):
         dg.s = s_t.tuple()[1]
         dg.print_more()
         assert dg.get_edge(dg.t, dg.s) is not None
-        print 'S', dg.s, 'T', dg.t
+        debug('S %s T %s' % (str(dg.s), str(dg.t)))
         return dg
 
     def st(self):
@@ -353,7 +359,6 @@ class Point(object):
         new = copy(self)
         new.x += point.x
         new.y += point.y
-        print self, '+', point, '=', new
         return new
     def __eq__(self, point2):
         return type(point2) is Point and self.x == point2.x and self.y == point2.y
@@ -373,7 +378,7 @@ class Line(object):
         else:
             self.end = Point(*end)
         if self.is_point():
-            warning('%s:This line is a point!' % str(self))
+            info('%s:This line is a point!' % str(self))
     def __str__(self):
         return 'L[%s - %s]' % (str(self.start), str(self.end))
     def is_point(self):
@@ -548,8 +553,8 @@ class Drawing(object):
         line = 1
         v = nodes.pop(0)
         while len(nodes) >= 0:
-            print 'now on', v
-            print pending_edges
+            debug('now on %s' % v.name)
+            debug(str(pending_edges))
             #Choose column
             available_cols = []
             for x in g.get_adiacents(v):
@@ -560,15 +565,9 @@ class Drawing(object):
                 raise Exception('sth went wrong: no available columns!')
             #col is the chosen column
             degree = len([x for x in g.get_adiacents(v) if x['stn'] < v['stn']])
-#            if degree == 1:
-#                col = available_cols[0][0]
-#                chosen_col = [available_cols[0]]
-#                set_position(v, col, line)
-#            else:
             debug('Choosing col for %s from %s' % (v.id(), str(available_cols)))
             col = available_cols[len(available_cols)/2]
             chosen_col = col_choose.column_choose(available_cols)
-            #print available_cols, '=>', chosen_col
             col = chosen_col[(len(chosen_col)-1)/2][0]
             set_position(v, col, line)
             debug('Chosen: %d' % col)
@@ -577,7 +576,7 @@ class Drawing(object):
                 connect_points(g.nodes[column[1]], v, column[0])
 
             out_degree = len(g.get_adiacents(v)) - 4 + len(avail_sides[v.id()])
-            print avail_sides[v.id()]
+            debug(str(avail_sides[v.id()]))
             debug('%s has %d out_degree' % (v.id(), out_degree))
             allocate_column(v)
             if out_degree > 1:
@@ -595,7 +594,7 @@ class Drawing(object):
                 v = nodes.pop(0)
             except:
                 break
-        print self.positions
+        info(str(self.positions))
         
 
 def build_graph1():

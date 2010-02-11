@@ -12,7 +12,6 @@ def column_choose(avail_col):
         return (avail_col[len(avail_col)/2],)
     del incoming
 
-    print avail_col
     node1 = avail_col[0][1]
     center = None
     
