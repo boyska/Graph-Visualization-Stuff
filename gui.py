@@ -108,7 +108,7 @@ class Window(QtGui.QMainWindow):
         self.on_ok()
     
     def on_random(self):
-        ahnentafel_enc = hv.random_tree(random.randint(5, 15))
+        ahnentafel_enc = hv.random_tree(self.spin_box.value())
         self.input.setText(ahnentafel_enc)
         self.on_ok()
 

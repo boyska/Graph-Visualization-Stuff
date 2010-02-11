@@ -111,20 +111,23 @@ def complete_tree(h):
             last = chr(1+ord(last))
     return ','.join(l)
 
-def random_tree(len):
-    last_char = 'a'
+def random_tree(length):
+    last_char = 'A'
     l = ['a']
-    for i in range(len):
-        yes = random.randint(0,1)
+    for i in range(length):
+        yes = random.randint(0,20)
         if yes:
-            if ord(last_char)<= ord('z'):
-                last_char = chr(1+ord(last_char))
-            else:
+            if last_char == 'z':
+                last_char = 'A'
+            if last_char == 'Z':
                 last_char = 'a'
+            else:
+                last_char = chr(1+ord(last_char))
             l.append(last_char)
         else:
             l.append('0')
     return ','.join(l)
+
 def hv(g):
     if not g:
         return 0
