@@ -116,11 +116,8 @@ class DiGraph(object):
                 return n['low']
             min = n['dfn']
             for x in [edge.tuple()[1] for edge in self.get_adiacent_edge(n) if not edge['back']]:
-                low_x = x['low']
-                if not low_x:
-                    low_x = low(x)
-                if low_x is None:
-                    warning('error on LOW:' + str(x))
+                low_x = low(x)
+                assert low_x is not None
                 if low_x < min:
                     min = x['low']
             for w in [edge.tuple()[1] for edge in self.get_adiacent_edge(n) if edge['back']]:
@@ -141,7 +138,7 @@ class DiGraph(object):
                     return [v, adiac.tuple()[1]]
 
             #Caso 2: esiste un arco dell'albero non marcato (v,w)
-            for adiac_edge in self.get_adiacent_edge(v):
+            for adiac in self.get_adiacent_edge(v):
                 if (not adiac['back']) and (not adiac['path_mark']):
                     debug('CASO 2: arco dell albero non marcato')
                     ret = [v]
@@ -152,25 +149,32 @@ class DiGraph(object):
                         wi['path_mark'] = True
                         ret.append( wi)
                         for backedge in self.get_adiacent_edge(wi):
-                            if not backedge['back']:
+                            if not backedge['back']: # or backedge['path_mark']:
                                 continue
                             u = backedge.tuple()[1]
                             #mah...
-#                            if u['dfn'] != w['low']:
-#                                continue
-                            u_v = self.get_edge(u, v)
-                            if u_v and not u_v['back']:
-                                u['path_mark'] = True
-                                u_v['path_mark'] = True
-                                ret.append(u)
-                                return ret
-                        for treeedge in self.get_adiacent_edge(wi):
-                            if backedge['back']:
+                            if u['dfn'] != w['low']:
                                 continue
-                            if backedge.tuple()[1]['low'] == w['low']:
-                                wi = backedge.tuple()[1]
-                                wi['path_mark'] = True
+                            if u['path_mark']:
                                 backedge['path_mark'] = True
+                                u['path_mark'] = True
+                                ret.append(u)
+                                v['path_mark'] = True
+                                return ret
+
+                            #u_v = self.get_edge(u, v)
+                            #if u_v and not u_v['back']:
+                            #    u['path_mark'] = True
+                            #    #u_v['path_mark'] = True
+                            #    ret.append(u)
+                            #    return ret
+                        for treeedge in self.get_adiacent_edge(wi):
+                            if treeedge['back']:
+                                continue
+                            if treeedge.tuple()[1]['low'] == w['low']:
+                                wi = treeedge.tuple()[1]
+                                wi['path_mark'] = True
+                                treeedge['path_mark'] = True
                                 break
                         else: #Nothing found
                             raise Exception('Where do we go now?')
@@ -183,22 +187,32 @@ class DiGraph(object):
                     #Risaliamo l'albero seguendo FATH
                     ret = [v]
                     wi = adiac.tuple()[0]
+                    v['path_mark'] = True
                     adiac['path_mark'] = True
-                    while wi != v:
+                    edge = adiac
+                    #while wi != v:
+                    while not wi['path_mark']:
                         wi['path_mark'] = True
-                        adiac['path_mark'] = True
+                        edge['path_mark'] = True
                         ret.append(wi)
+                        edge = self.get_edge(wi['fath'], wi)
                         wi = wi['fath']
+                    wi['path_mark'] = True
+                    edge['path_mark'] = True
+                    ret.append(wi)
                     return ret
             #Caso 4: tutti gli archi incidenti a v sono marcati
             if False not in [adiac['path_mark'] for adiac in self.get_incident_edge(v)]:
                 debug('Caso 4: tutti gli archi incidenti a v sono marcati')
+                v['path_mark'] = True
                 return []
 
             raise Exception('Per %s Nessun caso va bene!!' % str(v))
 
         for v in self.nodes.values():
             low(v)
+        with open('lastgraph.dot', 'w') as buf:
+            buf.write('digraph G {\n%s}\n' % self.to_graphviz())
         #Its just a test, the real algo is a bit more complex
         stack = [self.t, self.s]
         self.s['vis'] = True
@@ -210,8 +224,11 @@ class DiGraph(object):
             res = path(v)
             debug('path(%s) = %s' % (str(v), [str(e) for e in res]))
             if res == [] and not v['stn']:
+                debug('Assigned %s[STN] = %d' % (v.name, cont))
                 v['stn'] = cont
                 cont += 1
+                with open('lastgraph.dot.%d' % cont, 'w') as buf:
+                    buf.write('digraph G {\n%s}\n' % self.to_graphviz())
             else:
                 res.reverse()
                 stack.extend(res[1:])
@@ -297,7 +314,7 @@ class Graph(DiGraph):
             n['fath'] = fath
             n['auxvis'] = True
             n_old['auxvis'] = True
-            n.adiacent = []
+            assert n.adiacent == []
             for c in self.get_adiacents(n_old):
                 if c['auxvis'] and fath.id() != c.id(): #Already visited
                     new_edge = dg.add_edge_by_id(n.id(), c.id()) #Arco all'indietro!!
@@ -322,26 +339,6 @@ class Graph(DiGraph):
         stgraph = self.st_graph(self.s) #its a directed graph
         stgraph.st()
         return stgraph
-        low(self.s)
-        self.t['dfs'] = 1
-        self.t['low'] = 1
-    
-        queue = [self.t, self.s]
-        self.s['vis'] = True
-        self.t['vis'] = True
-        self.get_edge(self.s, self.t)['vis'] = True
-        cont = 1
-        v = queue.pop() #s
-        while v != self.t:
-            if not path(v):
-                v['stn'] = cont
-                info( '%s ha stn = %d' % (str(v), v['stn']))
-                cont += 1
-            else:
-                queue += path(v).reverse()
-            v = queue.pop()
-
-        self.t['stn'] = cont
 
 class Point(object):
     def __init__(self, x, y):
@@ -735,6 +732,8 @@ def build_graph_random(n=6):
     g = build_graph_cycle(n)
     for a in g.nodes.values():
         for b in g.nodes.values():
+            if b in g.get_adiacents(a) or a in g.get_adiacents(b):
+                continue
             if a == b:
                 continue
             if len(g.get_adiacents(a)) == 4 or len(g.get_adiacents(b)) ==4:
